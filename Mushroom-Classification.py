@@ -22,27 +22,28 @@ feature_names = onehot.get_feature_names_out(X.columns)
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.3, random_state=42)
 
-# Train a Random Forest Classifier
-model = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=3)
+# Farklı max_depth değerleri için skorları hesaplayalım
+max_depths = range(1, 15)
+train_scores = []
+test_scores = []
 
-# Perform cross-validation
-cv_scores = cross_val_score(model, X_train, y_train, cv=5)
-print("\nCross-validation Scores:")
-print(f"CV scores: {cv_scores}")
-print(f"Mean CV score: {cv_scores.mean():.4f} (+/- {cv_scores.std() * 2:.4f})")
+for depth in max_depths:
+    model = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=depth)
+    model.fit(X_train, y_train)
+    train_scores.append(model.score(X_train, y_train))
+    test_scores.append(model.score(X_test, y_test))
 
-# Train the model
-model.fit(X_train, y_train)
-
-# Compare training and testing scores
-train_score = model.score(X_train, y_train)
-test_score = model.score(X_test, y_test)
-print(f"\nTraining score: {train_score:.4f}")
-print(f"Testing score: {test_score:.4f}")
-
-# Check for overfitting
-if train_score - test_score > 0.1:
-    print("\nWarning: Model might be overfitting (large gap between training and test scores)")
+# Plot training vs testing scores
+plt.figure(figsize=(10, 6))
+plt.plot(max_depths, train_scores, 'o-', color='#2ecc71', label='Training Score', linewidth=2)
+plt.plot(max_depths, test_scores, 'o-', color='#e74c3c', label='Testing Score', linewidth=2)
+plt.xlabel('Max Depth', fontsize=12)
+plt.ylabel('Score', fontsize=12)
+plt.title('Training vs Testing Scores for Different Tree Depths', fontsize=14, pad=15)
+plt.grid(True, linestyle='--', alpha=0.7)
+plt.legend(fontsize=10)
+plt.tight_layout()
+plt.show()
 
 # Feature importance analysis with better visualization
 plt.style.use('default')  # Changed from 'seaborn' to 'default'
